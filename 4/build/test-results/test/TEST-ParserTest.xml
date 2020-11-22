@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ParserTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2020-10-02T09:33:47" hostname="debian" time="0.041">
+  <properties/>
+  <testcase name="testParseArrayList" classname="ParserTest" time="0.024"/>
+  <testcase name="testParseFile" classname="ParserTest" time="0.005"/>
+  <testcase name="testParseLine" classname="ParserTest" time="0.002"/>
+  <testcase name="testSetterGetter" classname="ParserTest" time="0.001"/>
+  <system-out><![CDATA[No input or output file
+No input or output file
+No input or output file
+No input or output file
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
