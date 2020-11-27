@@ -6,7 +6,7 @@ public class Main{
 	public static void main(String[] args) {
 		Scanner scan = new Scanner(System.in);
 			
-
+		/*
 		System.out.println("enter input directory: ");
 		String inputDir = scan.nextLine();
 		
@@ -21,10 +21,13 @@ public class Main{
 
 		System.out.println("enter number of streams: ");
 		int numberOfStreams = scan.nextInt();
-
+*/
 		scan.close();
 
 		//creating parser object
+		String uniter = "+", delimiter = ",";
+		String inputDir = "../resources/csv", outputFile =  "../resources/res.txt";
+		int numberOfStreams = 1;
 		Parser csvParser = new Parser( uniter, delimiter, inputDir, outputFile, numberOfStreams);
 
 		//running main function and getting amount of time it worked

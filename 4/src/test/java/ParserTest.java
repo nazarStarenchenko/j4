@@ -30,6 +30,13 @@ public class ParserTest {
     }
 
     @Test
+    public void testSaveFile() throws IOException{
+        ArrayList<String> test = new ArrayList<String>();
+        test.add("string1\n");
+        this.instance.saveToFile(test);
+    }
+
+    @Test
     public void testParseLine () {
         assertEquals(new ArrayList<>(Arrays.asList("a", "b", "c")), instance.parseLine("\"a\",b,c"));
         assertEquals(new ArrayList<>(Arrays.asList("abc", "1234", "q2!cvb")), instance.parseLine("abc,1234,q2!cvb"));
@@ -40,30 +47,25 @@ public class ParserTest {
 
     @Test
     public void testSetterGetter() {
-        Parser testInstance = new Parser("1", "2", "base.csv", "result.txt");
+        Parser testInstance = new Parser("1", "2", "base.csv", "result.txt", 32);
         assertEquals("2", testInstance.getDelimiter());
         assertEquals("1", testInstance.getUniter());
         assertEquals(1, testInstance.setDelimiter(","));
         assertEquals(1, testInstance.setUniter("+"));
         assertEquals("base.csv", testInstance.getdirIn());
+        assertEquals(32, testInstance.getNumberOfStreams());
+        assertEquals(1, testInstance.setNumberOfStreams(32));
         assertEquals("result.txt", testInstance.getFileOut());
     }
 
 
     @Test
     public void testParseFile() throws IOException {
-        final File tempdirIn = tempFolder.newFile("base.csv");
+        final File tempDirIn = tempFolder.newFolder("subfolder");
         final File tempFileOut = tempFolder.newFile("result.txt");
-        
-        BufferedWriter bw = new BufferedWriter(new FileWriter(tempdirIn));
-        BufferedReader br = new BufferedReader(new FileReader(tempFileOut));
-        
-        bw.write("a,b,c");
-        bw.close();
-        
-        this.instance.parseFile(tempdirIn.getAbsolutePath(), tempFileOut.getAbsolutePath());
-        assertEquals("1+1+1", br.readLine());
-        br.close();
+        final File tempFileIn = tempFolder.newFile("base.csv");
+       
+        this.instance.parseFile(tempDirIn.getAbsolutePath(), tempFileOut.getAbsolutePath(), 1);
             
     }
     

@@ -1,123 +1,174 @@
-<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Parser.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">2</a> &gt; <a href="index.source.html" class="el_package">default</a> &gt; <span class="el_source">Parser.java</span></div><h1>Parser.java</h1><pre class="source lang-java linenums">import java.io.*;
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Parser.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">4</a> &gt; <a href="index.source.html" class="el_package">default</a> &gt; <span class="el_source">Parser.java</span></div><h1>Parser.java</h1><pre class="source lang-java linenums">import java.io.*;
 import java.util.Scanner;
 import java.util.ArrayList;
+import java.util.concurrent.*;
 
 public class Parser {
-	private String fileIn, fileOut;
-<span class="fc" id="L7">	private String delimiter = &quot;,&quot;, uniter = &quot;+&quot;;</span>
+	private String dirIn, fileOut;
+<span class="fc" id="L8">	private String delimiter = &quot;,&quot;, uniter = &quot;+&quot;;</span>
+<span class="fc" id="L9">	private final Object MONITOR = new Object();</span>
+	//there might be 1,2,8,32 streams
+<span class="fc" id="L11">	private int numberOfStreams = 1;</span>
 
+<span class="fc" id="L13">	Parser() {</span>
+<span class="fc" id="L14">		System.out.println(&quot;No input or outputfile&quot;); </span>
+<span class="fc" id="L15">	}</span>
 
-<span class="fc" id="L10">	Parser() {</span>
-<span class="fc" id="L11">		System.out.println(&quot;No input or output file&quot;);</span>
-<span class="fc" id="L12">	}</span>
-	
-	
-<span class="fc" id="L15">	Parser( String unit,String  delimit, String inputFile, String outputFile){</span>
-<span class="fc" id="L16">		delimiter = delimit;</span>
-<span class="fc" id="L17">		uniter = unit;</span>
-<span class="fc" id="L18">		fileIn = inputFile;</span>
-<span class="fc" id="L19">		fileOut = outputFile;</span>
+	Parser( String unit,String delimit, String inputDir, String outputFile, int numberOfStreamsFromUser)
+<span class="fc" id="L18">	{</span>
+<span class="fc" id="L19">		delimiter = delimit; </span>
+<span class="fc" id="L20">		uniter = unit; </span>
+<span class="fc" id="L21">		dirIn = inputDir; </span>
+<span class="fc" id="L22">		fileOut = outputFile; </span>
+<span class="fc" id="L23">		numberOfStreams = numberOfStreamsFromUser; </span>
+<span class="fc" id="L24">	}</span>
+	public void parseFile(String dirInPath , String fileOut, int numberOfStreamsFromUser) {
 
-<span class="fc" id="L21">	}</span>
+<span class="fc" id="L27">		File dirIn = new File(dirInPath);</span>
+<span class="fc" id="L28">		File[] files = dirIn.listFiles();</span>
+<span class="fc" id="L29">		ArrayList&lt;String&gt; addToFileLater = new ArrayList&lt;String&gt;(); </span>
+		//cleaning result file before every run of main code
+		try {
+<span class="fc" id="L32">			PrintWriter cleanWriter = new PrintWriter(fileOut);</span>
+<span class="fc" id="L33">			cleanWriter.print(&quot;&quot;);</span>
+<span class="fc" id="L34">			cleanWriter.close();</span>
+<span class="nc" id="L35">		} catch (FileNotFoundException e) {</span>
+<span class="nc" id="L36">			e.printStackTrace();</span>
+<span class="fc" id="L37">		}</span>
 
-	public void parseFile(String fileIn , String fileOut ) {
-        
+		//multithread file working
+<span class="fc" id="L40">		ExecutorService service = Executors.newFixedThreadPool(numberOfStreamsFromUser);</span>
+<span class="pc bpc" id="L41" title="1 of 2 branches missed.">		for (File f: files){</span>
+<span class="nc" id="L42">			service.execute(new Runnable() {</span>
+				@Override
+				public void run() {
+					//opening files that we will be woring with
+<span class="nc" id="L46">					try(BufferedReader reader = new BufferedReader(new FileReader(f));) {</span>
 
-<span class="fc" id="L26">        try(BufferedReader reader = new BufferedReader(new FileReader(fileIn));</span>
-<span class="fc" id="L27">            BufferedWriter writer = new BufferedWriter(new FileWriter(fileOut));) {</span>
-            
+						String temp;
+<span class="nc" id="L49">						String line = reader.readLine();</span>
+<span class="nc bnc" id="L50" title="All 2 branches missed.">						while (line != null) {</span>
+<span class="nc" id="L51">									temp = parseArrayList(parseLine(line)) + &quot;\n&quot;;</span>
+<span class="nc" id="L52">									addToFileLater.add(temp);</span>
+<span class="nc" id="L53">									line = reader.readLine();</span>
+								}
 
-<span class="fc" id="L30">            String line = reader.readLine();</span>
+<span class="nc" id="L56">						System.out.println(addToFileLater);</span>
 
-<span class="fc bfc" id="L32" title="All 2 branches covered.">            while (line != null) {</span>
-<span class="fc" id="L33">	            writer.write(parseArrayList(parseLine(line)) + &quot;\n&quot;);</span>
-<span class="fc" id="L34">	            writer.flush();</span>
-<span class="fc" id="L35">                line = reader.readLine();</span>
-            }
-            
-<span class="nc" id="L38">        } catch (IOException e) {</span>
-<span class="nc" id="L39">            e.printStackTrace();</span>
-<span class="fc" id="L40">        }    </span>
+<span class="nc" id="L58">						saveToFile(addToFileLater);</span>
+<span class="nc" id="L59">					} catch (IOException e) {</span>
+<span class="nc" id="L60">						e.printStackTrace();</span>
+<span class="nc" id="L61">					}</span>
+<span class="nc" id="L62">				}</span>
+			});
+		}
+<span class="fc" id="L65">		service.shutdown();</span>
+<span class="fc" id="L66">   	}</span>
 
-<span class="fc" id="L42">   	}</span>
+   	public void saveToFile(ArrayList&lt;String&gt; strings) {
+<span class="fc" id="L69">		synchronized (MONITOR) {       </span>
+<span class="nc" id="L70">	      	try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileOut, true))) {</span>
+<span class="nc bnc" id="L71" title="All 2 branches missed.">	            for (String string : strings) {</span>
+<span class="nc" id="L72">	                writer.write(string);</span>
+<span class="nc" id="L73">	                writer.flush();</span>
+<span class="nc" id="L74">	            }</span>
+<span class="fc" id="L75">	        } catch (Exception e) {</span>
+<span class="fc" id="L76">	            e.printStackTrace();</span>
+<span class="nc" id="L77">	        }</span>
+<span class="fc" id="L78">    	}</span>
+<span class="fc" id="L79">    }</span>
+    
 
+   	//parisng one line of file into Array List [abc,hd,str]
     public ArrayList&lt;String&gt; parseLine(String line) {
-<span class="fc" id="L45">        ArrayList&lt;String&gt; result = new ArrayList&lt;String&gt;();</span>
-<span class="fc" id="L46">        StringBuilder subStr = new StringBuilder();</span>
-<span class="fc" id="L47">        boolean quoteStatus = false;</span>
-<span class="fc" id="L48">        boolean collectStatus = false;</span>
-<span class="fc" id="L49">        char[] characters = line.toCharArray();</span>
-<span class="fc" id="L50">        char tempDelim = delimiter.charAt(0);</span>
+<span class="fc" id="L84">        ArrayList&lt;String&gt; result = new ArrayList&lt;String&gt;();</span>
+<span class="fc" id="L85">        StringBuilder subStr = new StringBuilder();</span>
+<span class="fc" id="L86">        boolean quoteStatus = false;</span>
+<span class="fc" id="L87">        boolean collectStatus = false;</span>
+<span class="fc" id="L88">        char[] characters = line.toCharArray();</span>
+<span class="fc" id="L89">        char tempDelim = delimiter.charAt(0);</span>
         
-<span class="fc bfc" id="L52" title="All 2 branches covered.">        for (char ch : characters) {</span>
+<span class="fc bfc" id="L91" title="All 2 branches covered.">        for (char ch : characters) {</span>
 
         	       	
-<span class="fc bfc" id="L55" title="All 2 branches covered.">        		if (quoteStatus == true) {</span>
+<span class="fc bfc" id="L94" title="All 2 branches covered.">        		if (quoteStatus == true) {</span>
 
-<span class="fc" id="L57">	                collectStatus = true;</span>
-<span class="fc bfc" id="L58" title="All 2 branches covered.">	                if (ch == '&quot;') quoteStatus = false;</span>
-<span class="fc" id="L59">	                else subStr.append(ch);</span>
-<span class="pc bpc" id="L60" title="1 of 2 branches missed.">	            } else if(quoteStatus == false) {</span>
-<span class="fc bfc" id="L61" title="All 2 branches covered.">	                if (ch == '&quot;') {</span>
-<span class="fc" id="L62">	                    quoteStatus = true;</span>
-<span class="pc bpc" id="L63" title="1 of 2 branches missed.">	                    if (characters[0] != '&quot;') subStr.append('&quot;');</span>
-<span class="pc bpc" id="L64" title="1 of 2 branches missed.">	                    if (collectStatus == true) subStr.append('&quot;');</span>
-<span class="fc bfc" id="L65" title="All 2 branches covered.">	                } else if (ch == tempDelim) {</span>
-<span class="pc bpc" id="L66" title="1 of 2 branches missed.">	                    if (!subStr.toString().equals(&quot;/&quot;)) result.add(subStr.toString());</span>
-<span class="fc" id="L67">	                    subStr = new StringBuilder();</span>
-<span class="fc" id="L68">	                    collectStatus = false;</span>
-<span class="pc bpc" id="L69" title="2 of 4 branches missed.">	                } else if (ch != '\r') if (ch == '\n') break;</span>
-<span class="fc" id="L70">	                else subStr.append(ch);</span>
+<span class="fc" id="L96">	                collectStatus = true;</span>
+<span class="fc bfc" id="L97" title="All 2 branches covered.">	                if (ch == '&quot;') quoteStatus = false;</span>
+<span class="fc" id="L98">	                else subStr.append(ch);</span>
+<span class="pc bpc" id="L99" title="1 of 2 branches missed.">	            } else if(quoteStatus == false) {</span>
+<span class="fc bfc" id="L100" title="All 2 branches covered.">	                if (ch == '&quot;') {</span>
+<span class="fc" id="L101">	                    quoteStatus = true;</span>
+<span class="pc bpc" id="L102" title="1 of 2 branches missed.">	                    if (characters[0] != '&quot;') subStr.append('&quot;');</span>
+<span class="pc bpc" id="L103" title="1 of 2 branches missed.">	                    if (collectStatus == true) subStr.append('&quot;');</span>
+<span class="fc bfc" id="L104" title="All 2 branches covered.">	                } else if (ch == tempDelim) {</span>
+<span class="pc bpc" id="L105" title="1 of 2 branches missed.">	                    if (!subStr.toString().equals(&quot;/&quot;)) result.add(subStr.toString());</span>
+<span class="fc" id="L106">	                    subStr = new StringBuilder();</span>
+<span class="fc" id="L107">	                    collectStatus = false;</span>
+<span class="pc bpc" id="L108" title="2 of 4 branches missed.">	                } else if (ch != '\r') if (ch == '\n') break;</span>
+<span class="fc" id="L109">	                else subStr.append(ch);</span>
 	            }
 	    }
 
-<span class="pc bpc" id="L74" title="1 of 2 branches missed.">        if (!subStr.toString().equals(&quot;/&quot;)) result.add(subStr.toString());</span>
-<span class="fc" id="L75">        return result;</span>
+<span class="pc bpc" id="L113" title="1 of 2 branches missed.">        if (!subStr.toString().equals(&quot;/&quot;)) result.add(subStr.toString());</span>
+<span class="fc" id="L114">        return result;</span>
     }
 
+    //transforming array list from parseLine into string of needed format: &quot;3+4+5&quot;
     public String parseArrayList (ArrayList&lt;String&gt; arrList) {
     	String result;
-<span class="fc" id="L80">    	StringBuilder tempStr = new StringBuilder();	</span>
+<span class="fc" id="L120">    	StringBuilder tempStr = new StringBuilder();	</span>
 
-<span class="fc bfc" id="L82" title="All 2 branches covered.">    	for (String strIter : arrList) {</span>
-<span class="fc" id="L83">    		tempStr.append(strIter.length());</span>
-<span class="fc" id="L84">    		tempStr.append(uniter);</span>
-<span class="fc" id="L85">	   	}</span>
-<span class="fc" id="L86">	   	tempStr.setLength(tempStr.length() - 1);</span>
-<span class="fc" id="L87">	   	result = tempStr.toString();</span>
-<span class="fc" id="L88">	   	return result;</span>
-    }	
+<span class="fc bfc" id="L122" title="All 2 branches covered.">    	for (String strIter : arrList) {</span>
+<span class="fc" id="L123">    		tempStr.append(strIter.length());</span>
+<span class="fc" id="L124">    		tempStr.append(uniter);</span>
+<span class="fc" id="L125">	   	}</span>
+<span class="fc" id="L126">	   	tempStr.setLength(tempStr.length() - 1);</span>
+<span class="fc" id="L127">	   	result = tempStr.toString();</span>
+<span class="fc" id="L128">	   	return result;</span>
+    }
+
+    //getters and setters
     public String getDelimiter() {
-<span class="fc" id="L91">            return delimiter;</span>
+<span class="fc" id="L133">            return delimiter;</span>
         }
 
         public String getUniter() {
-<span class="fc" id="L95">            return uniter;</span>
+<span class="fc" id="L137">            return uniter;</span>
 	}
 
-	
 	public int setDelimiter(String delim) {
 		if(true){
-<span class="fc" id="L101">			delimiter = delim;</span>
-<span class="fc" id="L102">			return 1;</span>
+<span class="fc" id="L142">			delimiter = delim;</span>
+<span class="fc" id="L143">			return 1;</span>
 		}else return 0;
 	}
 
 	public int setUniter(String unit) {
 		if(true){
-<span class="fc" id="L108">			uniter = unit;</span>
-<span class="fc" id="L109">			return 1;</span>
+<span class="fc" id="L149">			uniter = unit;</span>
+<span class="fc" id="L150">			return 1;</span>
 		}else return 0;
 	}
 
-	public String getFileIn () {
-<span class="fc" id="L114">		return fileIn;</span>
+	public String getdirIn () {
+<span class="fc" id="L155">		return dirIn;</span>
 	}
 
 	public String getFileOut() {
-<span class="fc" id="L118">		return fileOut;</span>
+<span class="fc" id="L159">		return fileOut;</span>
 	}
 	
+	public int getNumberOfStreams() {
+<span class="fc" id="L163">		return numberOfStreams;</span>
+	}
+
+	public int setNumberOfStreams(int num) {
+		if(true){
+<span class="fc" id="L168">			numberOfStreams = num;</span>
+<span class="fc" id="L169">			return 1;</span>
+		}else return 0;
+	}
 
 }
 

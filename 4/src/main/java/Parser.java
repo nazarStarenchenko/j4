@@ -6,22 +6,27 @@ import java.util.concurrent.*;
 public class Parser {
 	private String dirIn, fileOut;
 	private String delimiter = ",", uniter = "+";
+	private final Object MONITOR = new Object();
 	//there might be 1,2,8,32 streams
 	private int numberOfStreams = 1;
 
-	Parser( String unit,String delimit, String inputDir, String outputFile, int numberOfStreamsFromUser){
-		delimiter = delimit;
-		uniter = unit;
-		dirIn = inputDir;
-		fileOut = outputFile;
-		numberOfStreams = numberOfStreamsFromUser;
+	Parser() {
+		System.out.println("No input or outputfile"); 
 	}
 
+	Parser( String unit,String delimit, String inputDir, String outputFile, int numberOfStreamsFromUser)
+	{
+		delimiter = delimit; 
+		uniter = unit; 
+		dirIn = inputDir; 
+		fileOut = outputFile; 
+		numberOfStreams = numberOfStreamsFromUser; 
+	}
 	public void parseFile(String dirInPath , String fileOut, int numberOfStreamsFromUser) {
 
 		File dirIn = new File(dirInPath);
 		File[] files = dirIn.listFiles();
-
+		ArrayList<String> addToFileLater = new ArrayList<String>(); 
 		//cleaning result file before every run of main code
 		try {
 			PrintWriter cleanWriter = new PrintWriter(fileOut);
@@ -38,27 +43,44 @@ public class Parser {
 				@Override
 				public void run() {
 					//opening files that we will be woring with
-					try(BufferedReader reader = new BufferedReader(new FileReader(f));
-						BufferedWriter writer = new BufferedWriter(new FileWriter(fileOut, true));) {
+					try(BufferedReader reader = new BufferedReader(new FileReader(f));) {
 
+						String temp;
 						String line = reader.readLine();
 						while (line != null) {
-									writer.write(parseArrayList(parseLine(line)) + "\n");
-									writer.flush();
+									temp = parseArrayList(parseLine(line)) + "\n";
+									addToFileLater.add(temp);
 									line = reader.readLine();
 								}
+
+						System.out.println(addToFileLater);
+
+						saveToFile(addToFileLater);
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
 				}
 			});
 		}
-
 		service.shutdown();
    	}
 
+   	public void saveToFile(ArrayList<String> strings) {
+		synchronized (MONITOR) {       
+	      	try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileOut, true))) {
+	            for (String string : strings) {
+	                writer.write(string);
+	                writer.flush();
+	            }
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	        }
+    	}
+    }
+    
+
    	//parisng one line of file into Array List [abc,hd,str]
-    private ArrayList<String> parseLine(String line) {
+    public ArrayList<String> parseLine(String line) {
         ArrayList<String> result = new ArrayList<String>();
         StringBuilder subStr = new StringBuilder();
         boolean quoteStatus = false;
@@ -93,7 +115,7 @@ public class Parser {
     }
 
     //transforming array list from parseLine into string of needed format: "3+4+5"
-    private String parseArrayList (ArrayList<String> arrList) {
+    public String parseArrayList (ArrayList<String> arrList) {
     	String result;
     	StringBuilder tempStr = new StringBuilder();	
 
@@ -137,6 +159,16 @@ public class Parser {
 		return fileOut;
 	}
 	
+	public int getNumberOfStreams() {
+		return numberOfStreams;
+	}
+
+	public int setNumberOfStreams(int num) {
+		if(true){
+			numberOfStreams = num;
+			return 1;
+		}else return 0;
+	}
 
 }
 
