@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="ParserTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2020-11-27T12:55:04" hostname="nazar-laptop" time="0.036">
+<testsuite name="ParserTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2020-11-27T12:59:43" hostname="nazar-laptop" time="0.038">
   <properties/>
   <testcase name="testSaveFile" classname="ParserTest" time="0.026"/>
-  <testcase name="testParseArrayList" classname="ParserTest" time="0.002"/>
-  <testcase name="testParseFile" classname="ParserTest" time="0.003"/>
-  <testcase name="testParseLine" classname="ParserTest" time="0.002"/>
-  <testcase name="testSetterGetter" classname="ParserTest" time="0.001"/>
+  <testcase name="testParseArrayList" classname="ParserTest" time="0.001"/>
+  <testcase name="testParseFile" classname="ParserTest" time="0.004"/>
+  <testcase name="testParseLine" classname="ParserTest" time="0.003"/>
+  <testcase name="testSetterGetter" classname="ParserTest" time="0.0"/>
   <system-out><![CDATA[No input or outputfile
 No input or outputfile
 No input or outputfile

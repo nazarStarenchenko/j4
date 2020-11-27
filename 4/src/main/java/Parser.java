@@ -48,12 +48,11 @@ public class Parser {
 						String temp;
 						String line = reader.readLine();
 						while (line != null) {
-									temp = parseArrayList(parseLine(line)) + "\n";
-									addToFileLater.add(temp);
-									line = reader.readLine();
-								}
+							temp = parseArrayList(parseLine(line)) + "\n";
+							addToFileLater.add(temp);
+							line = reader.readLine();
+						}
 
-						System.out.println(addToFileLater);
 
 						saveToFile(addToFileLater);
 					} catch (IOException e) {
